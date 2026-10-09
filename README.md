@@ -13,7 +13,7 @@
   + Answer generation
 
 ## Goal
-This agent is a question-answering tool that reads your documents and answers questions about them.
+This is a simple agent designed as a question-answering tool that reads your documents and answers questions about them.
 
 You give it a folder of text files such as company policies, research notes, product documentation, etc. It reads and memorizes all of that content. 
 Then you, the user, can ask questions, and the Agent gives you an answer pulled directly from those documents, along with the exact passages it used.

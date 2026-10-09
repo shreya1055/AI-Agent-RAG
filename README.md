@@ -13,7 +13,8 @@
   + Answer generation
 
 ## Goal
-This agent is a question-answering tool that reads your documents and answers questions about them.\
+This agent is a question-answering tool that reads your documents and answers questions about them.
+
 You give it a folder of text files such as company policies, research notes, product documentation, etc. It reads and memorizes all of that content. 
 Then you, the user, can ask questions, and the Agent gives you an answer pulled directly from those documents, along with the exact passages it used.
 
@@ -27,11 +28,20 @@ exactly where it found the information. If the answer isn’t in your documents,
 
 
 ## Sample Tests of Agent
-Path: documents/investing.txt\
-Questions:
+**Path:** documents/investing.txt
+
+**Questions:**
 1. “What is the difference between a Roth IRA and a traditional IRA?” (answer spans two separate sections)
 2. “How does compound interest work?” (single focused section)
 3. “What are some common psychological mistakes investors make?” (behavioral finance section)
 4. “Should I invest in ETFs or mutual funds?” (needs to synthesize from multiple chunks)
 
+## Code Base
++ *schemas.py* — Pydantic Models for Request/Response Validation 
++ *main.py* — The FastAPI Application (entry point)
+  + This file wires together the RAG engine and the Pydantic schemas
+    into a web API with three endpoints:
+    + GET  /health  →  is the server alive? 
+    + POST /ingest  →  index documents into ChromaDB 
+    + POST /query   →  ask a question, get an AI-powered answer
 

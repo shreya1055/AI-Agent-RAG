@@ -15,8 +15,9 @@ uvicorn==0.53.0
 # langchain-google-genai: official Google Gemini integration for
 #                         LangChain — embeddings + chat model.
 langchain-community==0.4.2
-langchain==1.4.4
+langchain==0.3.27
 langchain-google-genai==4.4.0
+langchain-text-splitters==1.1.3
 
 # ── Vector database ──────────────────────────────────────────
 # chromadb: a lightweight vector database that runs in-process.

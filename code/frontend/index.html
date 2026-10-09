@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RAG Agent</title>
+
+  <!-- React + ReactDOM + Babel via CDN so this file runs with no build step.
+       Just open index.html in a browser (while the FastAPI server is running). -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
+
+  <style>
+    :root { --bg:#0f1115; --card:#1a1d24; --fg:#e6e6e6; --muted:#9aa0aa; --accent:#6ea8fe; --border:#2a2e37; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           background:var(--bg); color:var(--fg); line-height:1.5; }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 24px 16px 64px; }
+    h1 { font-size: 1.5rem; margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 20px; font-size: .9rem; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px; }
+    label { display:block; font-size:.8rem; color:var(--muted); margin-bottom:6px; }
+    input, textarea { width:100%; background:#0f1115; color:var(--fg); border:1px solid var(--border);
+                      border-radius:8px; padding:10px; font-size:1rem; font-family:inherit; }
+    textarea { resize:vertical; min-height:72px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+    .row > div { flex:1; min-width:140px; }
+    button { background:var(--accent); color:#0b1020; border:none; border-radius:8px; padding:10px 16px;
+             font-size:1rem; font-weight:600; cursor:pointer; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .ghost { background:transparent; color:var(--accent); border:1px solid var(--border); }
+    .status { display:inline-flex; align-items:center; gap:8px; font-size:.85rem; color:var(--muted); }
+    .dot { width:10px; height:10px; border-radius:50%; background:#666; }
+    .dot.ok { background:#39d98a; } .dot.bad { background:#ff6b6b; }
+    .answer { white-space:pre-wrap; }
+    .source { border-top:1px solid var(--border); padding-top:10px; margin-top:10px; font-size:.9rem; }
+    .source .meta { color:var(--muted); font-size:.78rem; margin-bottom:4px; }
+    .err { color:#ff8a8a; font-size:.9rem; }
+    .muted { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+    const API = "http://localhost:8000";
+
+    function App() {
+      const [health, setHealth] = useState(null);        // null = unknown
+      const [question, setQuestion] = useState("");
+      const [numResults, setNumResults] = useState(3);
+      const [docsPath, setDocsPath] = useState("./documents");
+      const [result, setResult] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [ingesting, setIngesting] = useState(false);
+      const [error, setError] = useState("");
+
+      const checkHealth = useCallback(async () => {
+        try {
+          const r = await fetch(`${API}/health`);
+          setHealth(await r.json());
+        } catch {
+          setHealth({ status: "unreachable", documents_loaded: false });
+        }
+      }, []);
+
+      useEffect(() => { checkHealth(); }, [checkHealth]);
+
+      async function ingest() {
+        setIngesting(true); setError("");
+        try {
+          const r = await fetch(`${API}/ingest`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ documents_path: docsPath }),
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.detail || "Ingest failed");
+          alert(`Indexed ${data.documents_loaded} document(s) → ${data.chunks_created} chunks.`);
+          checkHealth();
+        } catch (e) { setError(e.message); }
+        finally { setIngesting(false); }
+      }
+
+      async function ask(e) {
+        e.preventDefault();
+        if (!question.trim()) return;
+        setLoading(true); setError(""); setResult(null);
+        try {
+          const r = await fetch(`${API}/query`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question, num_results: Number(numResults) }),
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.detail || "Query failed");
+          setResult(data);
+        } catch (e) { setError(e.message); }
+        finally { setLoading(false); }
+      }
+
+      const ok = health && health.status === "healthy";
+      return (
+        <div className="wrap">
+          <h1>RAG Agent</h1>
+          <p className="sub">Ask questions over your documents · LangChain + Gemini + ChromaDB + FastAPI</p>
+
+          <div className="card">
+            <div className="status">
+              <span className={"dot " + (health ? (ok ? "ok" : "bad") : "")}></span>
+              {health
+                ? (health.status === "unreachable"
+                    ? "API unreachable — is the server running on :8000?"
+                    : `API ${health.status} · documents ${health.documents_loaded ? "loaded" : "not loaded"}`)
+                : "Checking API…"}
+              <button className="ghost" style={{ marginLeft: "auto" }} onClick={checkHealth}>Refresh</button>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="row">
+              <div>
+                <label>Documents folder (server-side path)</label>
+                <input value={docsPath} onChange={(e) => setDocsPath(e.target.value)} />
+              </div>
+              <button className="ghost" onClick={ingest} disabled={ingesting}>
+                {ingesting ? "Indexing…" : "Ingest"}
+              </button>
+            </div>
+            <p className="muted" style={{ fontSize: ".8rem", margin: "8px 0 0" }}>
+              Run this once (or after your .txt files change) to index documents.
+            </p>
+          </div>
+
+          <form className="card" onSubmit={ask}>
+            <label>Your question</label>
+            <textarea value={question} onChange={(e) => setQuestion(e.target.value)}
+                      placeholder="e.g. What is FastAPI?" />
+            <div className="row" style={{ marginTop: 12 }}>
+              <div style={{ maxWidth: 140, flex: "0 0 140px" }}>
+                <label># sources</label>
+                <input type="number" min="1" max="10" value={numResults}
+                       onChange={(e) => setNumResults(e.target.value)} />
+              </div>
+              <button type="submit" disabled={loading}>{loading ? "Thinking…" : "Ask"}</button>
+            </div>
+          </form>
+
+          {error && <div className="card err">⚠ {error}</div>}
+
+          {result && (
+            <div className="card">
+              <label>Answer</label>
+              <div className="answer">{result.answer}</div>
+              {result.sources && result.sources.length > 0 && (
+                <div>
+                  <label style={{ marginTop: 16 }}>Sources</label>
+                  {result.sources.map((s, i) => (
+                    <div key={i} className="source">
+                      <div className="meta">{s.metadata && s.metadata.source ? s.metadata.source : "unknown source"}</div>
+                      <div>{s.content}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

@@ -70,8 +70,9 @@ class RAGEngine:
         """
         self.persist_directory = persist_directory
         self.collection_name = collection_name
-        # Google's text-embedding-004 converts text into a 768-dimensional vector
-        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+        # gemini-embedding-001 is Google's current embedding model (text-embedding-004
+        # was retired Jan 2026 and now returns 404). It outputs 3072-dim vectors by default.
+        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
         self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash",temperature=0)
         self.vector_store = None
 

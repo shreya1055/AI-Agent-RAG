@@ -1,0 +1,15 @@
+fastapi==0.143.0
+uvicorn==0.53.0
+
+langchain==0.3.27
+langchain-community==0.3.27
+# Pinned to 2.x: the 4.x line requires langchain-core>=1.6.1, which conflicts with langchain/langchain-community 0.3.x (langchain-core<1.0.0)
+langchain-google-genai==2.1.5
+langchain-text-splitters==0.3.9
+
+chromadb==1.5.9
+langchain-chroma==0.2.4
+
+python-dotenv==1.2.4
+python-multipart==0.0.32
+pydantic==2.14.0

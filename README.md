@@ -1,4 +1,4 @@
-# AI Agent — RAG over Your Documents
+# AI Agent — RAG Over Your Documents
 
 A simple AI agent that answers questions **only** from documents you give it, using
 Retrieval-Augmented Generation (RAG). Ask a question in plain English and get an answer

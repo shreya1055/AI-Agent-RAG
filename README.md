@@ -44,4 +44,4 @@ exactly where it found the information. If the answer isn’t in your documents,
     + GET  /health  →  is the server alive? 
     + POST /ingest  →  index documents into ChromaDB 
     + POST /query   →  ask a question, get an AI-powered answer
-
++ *rag_engine.py* — The RAG (Retrieval-Augmented Generation) Engine

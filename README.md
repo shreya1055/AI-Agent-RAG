@@ -145,3 +145,19 @@ code/
 2. *"How does compound interest work?"* — single focused section
 3. *"What are some common psychological mistakes investors make?"* — behavioral-finance section
 4. *"Should I invest in ETFs or mutual funds?"* — needs to synthesize across multiple chunks
+
+## Example Usage
+### Step 1: Open index.html in browser
+<img width="819" height="552" alt="S1" src="https://github.com/user-attachments/assets/9930113f-a5da-4065-bcc7-2ac5c8e84c7b" />
+
+### Step 2: Startup main.py & Click on Refresh to See the Status Change to Healthy
+<img width="822" height="104" alt="s2" src="https://github.com/user-attachments/assets/69b6da29-50fa-446f-96f8-fa1dd95c27e2" />
+
+### Step 3: Set the document Folder Path and Click Ingest 
+<img width="1035" height="604" alt="s3" src="https://github.com/user-attachments/assets/bc75d7a6-4f95-48ba-9790-9086321ea098" />
+
+### Step 4: Ask a Question Related to a .txt File in the documents Folder & Set the # of Sources
+###         (Note: More sources => more token usage but better context)
+<img width="831" height="555" alt="Screenshot 2026-10-09 at 10 08 16 AM" src="https://github.com/user-attachments/assets/1b638908-3364-460a-91d8-2093d91e0715" />
+
+

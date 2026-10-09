@@ -158,6 +158,6 @@ code/
 
 ### Step 4: Ask a Question Related to a .txt File in the documents Folder & Set the # of Sources
 ###         (Note: More sources => more token usage but better context)
-<img width="831" height="555" alt="Screenshot 2026-10-09 at 10 08 16 AM" src="https://github.com/user-attachments/assets/1b638908-3364-460a-91d8-2093d91e0715" />
+<img width="831" height="555" alt="s4" src="https://github.com/user-attachments/assets/1b638908-3364-460a-91d8-2093d91e0715" />
 
 

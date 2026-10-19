@@ -70,8 +70,7 @@ class RAGEngine:
         """
         self.persist_directory = persist_directory
         self.collection_name = collection_name
-        # gemini-embedding-001 is Google's current embedding model (text-embedding-004
-        # was retired Jan 2026 and now returns 404). It outputs 3072-dim vectors by default.
+        # gemini-embedding-001 is Google's current embedding model
         self.embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
         self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash",temperature=0)
         self.vector_store = None
@@ -85,8 +84,6 @@ class RAGEngine:
         """
 
         # STEP 1: LOAD
-        # DirectoryLoader walks the folder and applies TextLoader to every file matching the glob pattern.
-        # glob="**/*.txt" checks for any depth of subdirectories ending in .txt
         loader = DirectoryLoader(documents_path, glob="**/*.txt", loader_cls=TextLoader)
         documents = loader.load()
 
@@ -141,12 +138,7 @@ class RAGEngine:
         if not self.vector_store:
             raise ValueError("No documents ingested yet. Call ingest_documents() first.")
 
-        # ChatPromptTemplate creates a structured conversation:
-        #   - ("system", "..."): sets the AI's behavior/role
-        #   - ("human", "..."):  the user's message
-        # Placeholders:
-        # - {context}: the retrieval chain fills this with the text of the retrieved document chunks, joined together.
-        # - {input}: the retrieval chain fills this with the user's question.
+
         prompt = ChatPromptTemplate.from_messages([
             ("system",
              """You are a helpful AI assistant. Use the following pieces of context to answer the question. If the context 
@@ -156,34 +148,9 @@ class RAGEngine:
         ])
         document_chain = create_stuff_documents_chain(self.llm, prompt)
 
-        #   create_retrieval_chain(retriever, document_chain)
-        #   Wraps a retriever + the document chain into one pipeline.
-        #   When you call .invoke(), it:
-        #     1. Sends the question to the retriever
-        #     2. The retriever embeds the question → searches ChromaDB
-        #        → returns top-k Document objects
-        #     3. Passes those Documents to the document chain as context
-        #     4. The document chain stuffs them into the prompt → LLM
-        #     5. Returns a dict with:
-        #          "input":   the original question
-        #          "context": list of retrieved Document objects
-        #          "answer":  the LLM's generated answer
-        #
-        #   self.vector_store.as_retriever() creates a retriever that:
-        #     1. Embeds the question into a vector
-        #     2. Runs cosine similarity search in ChromaDB
-        #     3. Returns the top-k results
-        #   search_kwargs={"k": k} sets how many chunks to retrieve.
         retriever = self.vector_store.as_retriever(search_kwargs={"k": k})
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
-        # RUN THE CHAIN
-        # .invoke() triggers the entire pipeline:
-        #   1. Embed the question → query vector
-        #   2. Search ChromaDB → top-k chunks
-        #   3. Fill prompt template → system + human messages
-        #   4. Send to Gemini → generated answer
-        #   5. Return {"input": "...", "context": [...], "answer": "..."}
         result = retrieval_chain.invoke({"input": question})
 
         # Formatted response

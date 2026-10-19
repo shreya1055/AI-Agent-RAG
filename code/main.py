@@ -1,10 +1,6 @@
 # http://localhost:8000/docs <- Interactive Swagger UI
 
-# Module that lets one create asynchronous context managers using an async generator function
-# Asynch Content Manager
-# i.e. 'asynch with' allows setup, cleauup, and crucially pausing (await) for other tasks.
-# Asynch Gen Func
-# Generator using yield with the use of await
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -19,9 +15,6 @@ from rag_engine import RAGEngine
 # This runs ONCE when the module is imported. The same instance is reused for every request
 rag_engine = RAGEngine()
 
-####################################
-# Startup/Shutdown Logic
-####################################
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -54,7 +47,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Allow the local React front-end to call the API. For this simple local demo we
+# Allow the local React front-end to call the API. For this simple local demo,
 # allow all origins; tighten allow_origins to your front-end URL in production.
 app.add_middleware(
     CORSMiddleware,
@@ -121,35 +114,11 @@ async def query_documents(request: QueryRequest):
 
 
 if __name__ == "__main__":
-    # This block runs only when you execute: python main.py
-    # It does NOT run when another module imports main.py.
-    # This is a Python convention called the "main guard."
-
-    # uvicorn: the ASGI server that runs your FastAPI application.
-    # Think of it like gunicorn for async Python.
     import uvicorn
 
     uvicorn.run(
-        # "main:app" tells uvicorn:
-        #   - "main" = the Python module (main.py)
-        #   - "app"  = the variable name of the FastAPI instance
-        # uvicorn imports main.py and finds the `app` object.
         "main:app",
-
-        # host="0.0.0.0" means listen on ALL network interfaces:
-        #   - 127.0.0.1 (localhost, for local testing)
-        #   - Your machine's LAN IP (for testing from other devices)
-        # Use "127.0.0.1" if you only want local access.
         host="127.0.0.1",
-
-        # port=8000: the TCP port to listen on.
-        # Your API is at http://localhost:8000
-        # Swagger docs are at http://localhost:8000/docs
         port=8000,
-
-        # reload=True: uvicorn watches your .py files for changes
-        # and auto-restarts the server when you save. Essential for
-        # development — you don't have to manually stop/start.
-        # NEVER use this in production (it's slower and less stable).
         reload=True,
     )
